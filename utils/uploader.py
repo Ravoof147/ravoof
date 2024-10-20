@@ -61,10 +61,17 @@ async def start_file_uploader(file_path, id, directory_path, filename, file_size
         message: Message = await client.send_document(
             config.STORAGE_CHANNEL,
             file_path,
-            caption=f"File ID: {random_id}",  # Adding the random ID in the caption
+            caption="Uploading...",  # Temporary caption
             progress=progress_callback,
             progress_args=(id, client, file_path),
             disable_notification=True,
+        )
+
+        # After successful upload, update the message caption with the random ID
+        await client.edit_message_caption(
+            chat_id=config.STORAGE_CHANNEL,
+            message_id=message.id,
+            caption=f"File ID: {random_id}",  # Update caption with the random ID
         )
 
         # Extract file size
@@ -82,7 +89,7 @@ async def start_file_uploader(file_path, id, directory_path, filename, file_size
         DRIVE_DATA.new_file(directory_path, filename, message.id, size)
         PROGRESS_CACHE[id] = ("completed", size, size)
 
-        logger.info(f"Uploaded file {file_path} {id}")
+        logger.info(f"Uploaded file {file_path} {id} with File ID: {random_id}")
 
     except Exception as e:
         logger.error(f"Failed to upload {file_path}: {e}")
